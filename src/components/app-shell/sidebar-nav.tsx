@@ -1,6 +1,14 @@
 "use client";
 
-import { FileText, FolderKanban, LayoutDashboard, ListChecks, Users, type LucideIcon } from "lucide-react";
+import {
+  FileText,
+  FolderKanban,
+  LayoutDashboard,
+  ListChecks,
+  SquareKanban,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -22,6 +30,7 @@ export function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: 
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/projects", label: "Projects", icon: FolderKanban },
     { href: "/tasks", label: role === "agent" ? "My tasks" : "Tasks", icon: ListChecks },
+    { href: "/board", label: "Board", icon: SquareKanban },
     { href: "/team", label: "Team", icon: Users },
   ];
 

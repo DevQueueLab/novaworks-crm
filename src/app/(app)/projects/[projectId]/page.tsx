@@ -5,7 +5,9 @@ import {
   Clock,
   FileText,
   Info,
+  List,
   ListChecks,
+  SquareKanban,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -14,16 +16,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache, type ReactNode } from "react";
 
+import { KanbanBoard } from "@/components/board/kanban-board";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { AvatarStack, UserAvatar } from "@/components/people";
 import { DeadlineChip, TaskList } from "@/components/projects/task-list";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { requireUser } from "@/lib/auth/dal";
-import { getProject, type PersonRef, type ProjectTask } from "@/lib/data/projects";
+import { getProject, type PersonRef, type ProjectDetail, type ProjectTask } from "@/lib/data/projects";
+import type { TaskListItem } from "@/lib/data/tasks";
 import { formatDate, formatHours } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 type Props = { params: Promise<{ projectId: string }> };
+type ProjectPageProps = Props & { searchParams: Promise<{ view?: string | string[] }> };
 
 /** One user + project lookup per request, shared by the metadata and the page. */
 const loadProject = cache(async (projectId: string) => {
@@ -38,12 +44,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: project ? project.name : "Project not found" };
 }
 
-export default async function ProjectPage({ params }: Props) {
-  const { projectId } = await params;
+export default async function ProjectPage({ params, searchParams }: ProjectPageProps) {
+  const [{ projectId }, { view }] = await Promise.all([params, searchParams]);
   const { user, project } = await loadProject(projectId);
   if (!project) notFound();
 
   const isAgent = user.role === "agent";
+  const isBoard = view === "board";
 
   return (
     <div className="space-y-8">
@@ -130,9 +137,16 @@ export default async function ProjectPage({ params }: Props) {
           <div>
             <h2 className="text-base leading-7 font-semibold tracking-tight">Tasks</h2>
             <p className="text-sm text-muted-foreground">
-              {isAgent ? "Your tasks on this project, in plan order." : "Every task on this project, in plan order."}
+              {isBoard
+                ? isAgent
+                  ? "Your tasks on this project by status. Drag a card to update it."
+                  : "Every task on this project by status. Drag a card to update it."
+                : isAgent
+                  ? "Your tasks on this project, in plan order."
+                  : "Every task on this project, in plan order."}
             </p>
           </div>
+          {project.tasks.length > 0 && <ViewSwitch projectId={project.id} board={isBoard} />}
         </div>
         {project.tasks.length === 0 ? (
           <EmptyState
@@ -144,11 +158,53 @@ export default async function ProjectPage({ params }: Props) {
                 : "This project doesn’t have any tasks yet."
             }
           />
+        ) : isBoard ? (
+          <KanbanBoard tasks={toBoardTasks(project)} />
         ) : (
           <TaskList tasks={project.tasks} />
         )}
       </section>
     </div>
+  );
+}
+
+/** The loaded project's tasks in the board's shape, so the board view needs no extra query. */
+function toBoardTasks(project: ProjectDetail): TaskListItem[] {
+  const ref = {
+    id: project.id,
+    name: project.name,
+    client: project.client,
+    deadline: project.deadline,
+    manager: project.manager.name,
+  };
+  return project.tasks.map((task) => ({ ...task, project: ref }));
+}
+
+/** List | Board segmented control. Plain links, so the view lives in the URL (`?view=board`). */
+function ViewSwitch({ projectId, board }: { projectId: string; board: boolean }) {
+  const options = [
+    { label: "List", icon: List, href: `/projects/${projectId}`, active: !board },
+    { label: "Board", icon: SquareKanban, href: `/projects/${projectId}?view=board`, active: board },
+  ];
+
+  return (
+    <nav aria-label="Task view" className="inline-flex shrink-0 items-center gap-0.5 rounded-lg border bg-muted/40 p-0.5">
+      {options.map(({ label, icon: Icon, href, active }) => (
+        <Link
+          key={label}
+          href={href}
+          scroll={false}
+          aria-current={active ? "page" : undefined}
+          className={cn(
+            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+            active ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <Icon className={cn("size-3.5", active && "text-primary")} aria-hidden />
+          {label}
+        </Link>
+      ))}
+    </nav>
   );
 }
 
