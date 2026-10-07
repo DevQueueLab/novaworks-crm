@@ -6,14 +6,12 @@ Paste a client-planning meeting transcript, and NovaWorks CRM uses AI to turn it
 
 ## Team
 - Team name: **DevQueue**
-- Four members and responsibilities:
+- Members:
 
-  | Member | Responsibility |
-  | --- | --- |
-  | [Member name] | Frontend / UI: pages, components (Tailwind CSS + shadcn/ui), transcript import and correction screens |
-  | [Member name] | Backend & database: PostgreSQL schema, Drizzle migrations, seeding, sessions, access-control layer, JSON API |
-  | [Member name] | AI integration: OpenRouter models, prompt, structured output schema, validation of AI drafts |
-  | [Member name] | Product & full-stack: requirements, end-to-end flow, Docker build, VPS deployment, README and demo |
+  | Member | Roll no. | GitHub |
+  | --- | --- | --- |
+  | Muhammad Muneeb Shahzad | FA24-BSE-085 | [@VicegerentPrince](https://github.com/VicegerentPrince) |
+  | Abdullah Hassan | FA24-BSE-007 | [@abdullahhrajpoot](https://github.com/abdullahhrajpoot) |
 
 - Repository: https://github.com/DevQueueLab/novaworks-crm
 
