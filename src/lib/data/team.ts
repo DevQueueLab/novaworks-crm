@@ -1,6 +1,6 @@
 import "server-only";
 
-import { asc, desc, sql } from "drizzle-orm";
+import { asc, desc, isNull, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { meetings, users } from "@/db/schema";
@@ -23,6 +23,7 @@ export async function listTeam(): Promise<TeamMember[]> {
       skills: users.skills,
     })
     .from(users)
+    .where(isNull(users.deactivatedAt))
     .orderBy(roleOrder, asc(users.code));
 }
 
@@ -38,6 +39,7 @@ export async function getDirectory(): Promise<DirectoryMember[]> {
       skills: users.skills,
     })
     .from(users)
+    .where(isNull(users.deactivatedAt))
     .orderBy(roleOrder, asc(users.code));
 }
 

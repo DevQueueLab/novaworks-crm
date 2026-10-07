@@ -15,7 +15,7 @@ import { buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
  */
 export const DEFAULT_MODEL_ID = "nvidia/nemotron-3-super-120b-a12b:free";
 const DEFAULT_MODEL = DEFAULT_MODEL_ID;
-const DEFAULT_FALLBACKS = "nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free";
+export const DEFAULT_FALLBACKS = "nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free";
 
 export class PlanExtractionError extends Error {
   override name = "PlanExtractionError";
