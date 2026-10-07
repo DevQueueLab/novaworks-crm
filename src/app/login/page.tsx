@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { LogoMark } from "@/components/app-shell/logo";
-import { DEMO_PASSWORD, DEMO_USERS } from "@/db/demo-users";
 import { getCurrentUser } from "@/lib/auth/dal";
 
 import { LoginForm } from "./login-form";
@@ -65,14 +64,6 @@ function BrandPanel() {
 export default async function LoginPage() {
   if (await getCurrentUser()) redirect("/");
 
-  const demoUsers = DEMO_USERS.map(({ code, name, email, role, title }) => ({
-    code,
-    name,
-    email,
-    role,
-    title,
-  }));
-
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <BrandPanel />
@@ -88,15 +79,12 @@ export default async function LoginPage() {
             <div className="mb-6 space-y-1.5">
               <h1 className="text-2xl leading-8 font-semibold tracking-tight">Sign in</h1>
               <p className="text-sm text-muted-foreground">
-                Welcome back. Sign in to turn meetings into momentum.
+                Use your NovaWorks account.
               </p>
             </div>
-            <LoginForm demoUsers={demoUsers} demoPassword={DEMO_PASSWORD} />
+            <LoginForm />
           </div>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            Accounts are seeded for the demo. There is no signup.
-          </p>
         </div>
       </main>
     </div>
