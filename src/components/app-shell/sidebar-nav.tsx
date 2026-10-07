@@ -5,7 +5,10 @@ import {
   FolderKanban,
   LayoutDashboard,
   ListChecks,
+  MessagesSquare,
+  Settings,
   SquareKanban,
+  UserCog,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -31,8 +34,17 @@ export function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: 
     { href: "/projects", label: "Projects", icon: FolderKanban },
     { href: "/tasks", label: role === "agent" ? "My tasks" : "Tasks", icon: ListChecks },
     { href: "/board", label: "Board", icon: SquareKanban },
+    { href: "/messages", label: "Messages", icon: MessagesSquare },
     { href: "/team", label: "Team", icon: Users },
   ];
+
+  const adminItems: NavItem[] =
+    role === "admin"
+      ? [
+          { href: "/admin/users", label: "Users", icon: UserCog },
+          { href: "/admin/settings", label: "Settings", icon: Settings },
+        ]
+      : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,9 +63,15 @@ export function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: 
         </Button>
       )}
 
-      <nav aria-label="Main" className="flex flex-col gap-0.5">
-        <p className="px-3 pb-1.5 text-xs font-medium text-muted-foreground">Workspace</p>
-        {items.map(({ href, label, icon: Icon }) => {
+      {[
+        { title: "Workspace", links: items },
+        { title: "Admin", links: adminItems },
+      ]
+        .filter((group) => group.links.length > 0)
+        .map((group) => (
+      <nav key={group.title} aria-label={group.title} className="flex flex-col gap-0.5">
+        <p className="px-3 pb-1.5 text-xs font-medium text-muted-foreground">{group.title}</p>
+        {group.links.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
             <Link
@@ -79,6 +97,7 @@ export function SidebarNav({ role, onNavigate }: { role: UserRole; onNavigate?: 
           );
         })}
       </nav>
+        ))}
     </div>
   );
 }
