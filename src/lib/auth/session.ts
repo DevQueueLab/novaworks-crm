@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { cookies } from "next/headers";
 
 import { db } from "@/db";
@@ -60,7 +60,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
-    .where(eq(sessions.id, sessionId))
+    .where(and(eq(sessions.id, sessionId), isNull(users.deactivatedAt)))
     .limit(1);
 
   if (!row) return null;

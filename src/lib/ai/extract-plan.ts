@@ -11,22 +11,25 @@ import { buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
 /*
  * Defaults run on OpenRouter's free tier. The primary supports native structured
  * output; the fallbacks are tried by OpenRouter when it is rate-limited or down.
- * Override with AI_MODEL and AI_FALLBACK_MODELS (comma-separated).
+ * Precedence: admin system settings → AI_MODEL / AI_FALLBACK_MODELS → these defaults.
  */
-const DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
+export const DEFAULT_MODEL_ID = "nvidia/nemotron-3-super-120b-a12b:free";
+const DEFAULT_MODEL = DEFAULT_MODEL_ID;
 const DEFAULT_FALLBACKS = "nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free";
 
 export class PlanExtractionError extends Error {
   override name = "PlanExtractionError";
 }
 
-function aiConfig() {
+type ModelOverrides = { model?: string | null; fallbacks?: string | null };
+
+function aiConfig(overrides: ModelOverrides = {}) {
   const apiKey = process.env.OPENROUTER_API_KEY?.trim();
   if (!apiKey) {
     throw new PlanExtractionError("AI is not configured on the server (OPENROUTER_API_KEY is missing).");
   }
-  const model = process.env.AI_MODEL?.trim() || DEFAULT_MODEL;
-  const fallbacks = (process.env.AI_FALLBACK_MODELS?.trim() || DEFAULT_FALLBACKS)
+  const model = overrides.model?.trim() || process.env.AI_MODEL?.trim() || DEFAULT_MODEL;
+  const fallbacks = (overrides.fallbacks?.trim() || process.env.AI_FALLBACK_MODELS?.trim() || DEFAULT_FALLBACKS)
     .split(",")
     .map((m) => m.trim())
     .filter((m) => m && m !== model);
@@ -41,8 +44,9 @@ export async function extractPlan(input: {
   transcript: string;
   directory: DirectoryMember[];
   referenceDate: string;
+  models?: ModelOverrides;
 }): Promise<{ draft: PlanDraft; model: string }> {
-  const { apiKey, model, fallbacks } = aiConfig();
+  const { apiKey, model, fallbacks } = aiConfig(input.models);
   const openrouter = createOpenRouter({
     apiKey,
     headers: { "HTTP-Referer": process.env.APP_URL ?? "http://localhost:3000", "X-Title": "NovaWorks CRM" },

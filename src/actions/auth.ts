@@ -22,7 +22,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   if (!parsed.success) return { error: "Enter a valid email and password.", email };
 
   const [user] = await db
-    .select({ id: users.id, passwordHash: users.passwordHash })
+    .select({ id: users.id, passwordHash: users.passwordHash, deactivatedAt: users.deactivatedAt })
     .from(users)
     .where(eq(users.email, parsed.data.email))
     .limit(1);
@@ -31,6 +31,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     ? await verifyPassword(user.passwordHash, parsed.data.password)
     : await verifyDecoy(parsed.data.password);
   if (!user || !valid) return { error: "Invalid email or password.", email };
+  if (user.deactivatedAt) return { error: "This account has been deactivated. Contact your administrator.", email };
 
   await createSession(user.id);
   redirect("/");

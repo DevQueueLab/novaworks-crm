@@ -21,6 +21,15 @@ import type { ApplySummary } from "@/lib/planning/types";
 export const userRole = pgEnum("user_role", ["admin", "manager", "agent"]);
 export type UserRole = (typeof userRole.enumValues)[number];
 
+export const taskStatus = pgEnum("task_status", ["todo", "in_progress", "in_review", "done"]);
+export type TaskStatus = (typeof taskStatus.enumValues)[number];
+
+export const activityKind = pgEnum("activity_kind", ["comment", "status_change", "edit"]);
+export type ActivityKind = (typeof activityKind.enumValues)[number];
+
+/** Extra data for non-comment activity: a status move or the list of edited fields. */
+export type ActivityMeta = { from?: TaskStatus; to?: TaskStatus; fields?: string[] };
+
 /** Time-ordered UUIDs (native in PostgreSQL 18) keep primary-key indexes compact. */
 const primaryId = () => uuid("id").primaryKey().default(sql`uuidv7()`);
 
@@ -45,6 +54,8 @@ export const users = pgTable(
     /** Specialization shown in the team directory, e.g. "Web PM" or "Full-Stack". */
     title: text("title").notNull(),
     skills: text("skills").array().notNull().default(sql`'{}'::text[]`),
+    /** Set by an admin to block sign-in while keeping the user's history. */
+    deactivatedAt: timestamp("deactivated_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -145,6 +156,8 @@ export const tasks = pgTable(
     }).notNull(),
     /** Order in which the meeting introduced the task. */
     position: smallint("position").notNull().default(0),
+    status: taskStatus("status").notNull().default("todo"),
+    statusChangedAt: timestamp("status_changed_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -158,5 +171,93 @@ export const tasks = pgTable(
     check("tasks_estimated_hours_positive", sql`${t.estimatedHours} > 0`),
     uniqueIndex("tasks_project_title_key").on(t.projectId, sql`lower(${t.title})`),
     index("tasks_assignee_id_idx").on(t.assigneeId),
+  ],
+);
+
+/** Workspace-wide settings an admin can change at runtime (exactly one row, id = 1). */
+export const appSettings = pgTable(
+  "app_settings",
+  {
+    id: smallint("id").primaryKey().default(1),
+    companyName: text("company_name").notNull().default("NovaWorks Technologies"),
+    /** OpenRouter model id; null falls back to AI_MODEL / the built-in default. */
+    aiModel: text("ai_model"),
+    /** Comma-separated OpenRouter fallbacks; null falls back to AI_FALLBACK_MODELS. */
+    aiFallbackModels: text("ai_fallback_models"),
+    updatedById: uuid("updated_by_id").references(() => users.id),
+    updatedAt: updatedAt(),
+  },
+  (t) => [check("app_settings_singleton", sql`${t.id} = 1`)],
+);
+
+export const channelKind = pgEnum("channel_kind", ["general", "project", "custom"]);
+export type ChannelKind = (typeof channelKind.enumValues)[number];
+
+/**
+ * Team chat channels. `general` and `custom` channels are open to everyone;
+ * a `project` channel belongs to one project and follows that project's access
+ * rules (admin, its manager, and agents with a task in it).
+ */
+export const channels = pgTable(
+  "channels",
+  {
+    id: primaryId(),
+    slug: text("slug").notNull().unique(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    kind: channelKind("kind").notNull(),
+    projectId: uuid("project_id")
+      .unique()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    createdById: uuid("created_by_id").references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check("channels_project_kind", sql`(${t.kind} = 'project') = (${t.projectId} is not null)`),
+    check("channels_slug_format", sql`${t.slug} ~ '^[a-z0-9][a-z0-9-]{0,62}$'`),
+  ],
+);
+
+export const channelMessages = pgTable(
+  "channel_messages",
+  {
+    id: primaryId(),
+    channelId: uuid("channel_id")
+      .notNull()
+      .references(() => channels.id, { onDelete: "cascade" }),
+    authorId: uuid("author_id")
+      .notNull()
+      .references(() => users.id),
+    body: text("body").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("channel_messages_channel_idx").on(t.channelId, t.createdAt),
+    check("channel_messages_body_length", sql`length(${t.body}) between 1 and 4000`),
+  ],
+);
+
+/** The task's communication channel: comments plus an audit trail of moves and edits. */
+export const taskActivity = pgTable(
+  "task_activity",
+  {
+    id: primaryId(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => tasks.id, { onDelete: "cascade" }),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => users.id),
+    kind: activityKind("kind").notNull(),
+    body: text("body"),
+    meta: jsonb("meta").$type<ActivityMeta>(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("task_activity_task_idx").on(t.taskId, t.createdAt),
+    check(
+      "task_activity_comment_body",
+      sql`${t.kind} <> 'comment' or (${t.body} is not null and length(${t.body}) between 1 and 4000)`,
+    ),
   ],
 );

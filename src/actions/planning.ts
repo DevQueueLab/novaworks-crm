@@ -15,6 +15,7 @@ import {
   type PlanDraft,
 } from "@/lib/planning/types";
 import { normalizeDraft, validatePlan } from "@/lib/planning/validate";
+import { getAppSettings } from "@/lib/settings";
 
 const MAX_TRANSCRIPT_CHARS = 60_000;
 
@@ -59,12 +60,13 @@ export async function createFromTranscript(input: {
     return { status: "error", message: parsed.error.issues[0]?.message ?? "Invalid transcript." };
   }
 
-  const directory = await getDirectory();
+  const [directory, settings] = await Promise.all([getDirectory(), getAppSettings()]);
   try {
     const { draft, model } = await extractPlan({
       transcript: parsed.data.transcript,
       directory,
       referenceDate: parsed.data.referenceDate ?? todayInKarachi(),
+      models: { model: settings.aiModel, fallbacks: settings.aiFallbackModels },
     });
     return await saveIfValid(admin.id, parsed.data.transcript, draft, model, directory);
   } catch (error) {

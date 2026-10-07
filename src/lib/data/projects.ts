@@ -4,7 +4,7 @@ import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import { db } from "@/db";
-import { clients, meetings, projects, tasks, users } from "@/db/schema";
+import { clients, meetings, projects, tasks, users, type TaskStatus } from "@/db/schema";
 import type { SessionUser } from "@/lib/auth/dal";
 
 import { isUuid, visibleProjects, visibleTasks } from "./access";
@@ -20,6 +20,8 @@ export type ProjectSummary = {
   manager: PersonRef;
   /** Counts and hours only cover tasks the viewer is allowed to see. */
   taskCount: number;
+  /** Visible tasks already in the Done column. */
+  doneCount: number;
   totalHours: number;
   assignees: PersonRef[];
   updatedAt: Date;
@@ -31,6 +33,7 @@ export type ProjectTask = {
   description: string;
   dueDate: string;
   estimatedHours: number;
+  status: TaskStatus;
   assignee: PersonRef;
 };
 
@@ -60,6 +63,7 @@ export async function listProjects(viewer: Viewer): Promise<ProjectSummary[]> {
       client: clients.name,
       manager: managerColumns,
       taskCount: sql<number>`count(${tasks.id})::int`,
+      doneCount: sql<number>`(count(${tasks.id}) filter (where ${tasks.status} = 'done'))::int`,
       totalHours: sql<number>`coalesce(sum(${tasks.estimatedHours}), 0)::float8`,
     })
     .from(projects)
@@ -110,6 +114,7 @@ export async function getProject(viewer: Viewer, projectId: string): Promise<Pro
       description: tasks.description,
       dueDate: tasks.dueDate,
       estimatedHours: tasks.estimatedHours,
+      status: tasks.status,
       assignee: assigneeColumns,
     })
     .from(tasks)
@@ -124,6 +129,7 @@ export async function getProject(viewer: Viewer, projectId: string): Promise<Pro
   return {
     ...rest,
     taskCount: projectTasks.length,
+    doneCount: projectTasks.filter((t) => t.status === "done").length,
     totalHours: projectTasks.reduce((sum, t) => sum + t.estimatedHours, 0),
     assignees: [...people.values()],
     tasks: projectTasks,

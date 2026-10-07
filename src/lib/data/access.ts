@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, exists, type SQL } from "drizzle-orm";
+import { and, eq, exists, sql, type SQL } from "drizzle-orm";
 
 import { db } from "@/db";
 import { projects, tasks } from "@/db/schema";
@@ -43,6 +43,29 @@ export function visibleTasks(viewer: Viewer): SQL | undefined {
       return eq(projects.managerId, viewer.id);
     case "agent":
       return eq(tasks.assigneeId, viewer.id);
+  }
+}
+
+/**
+ * Rows of `tasks` the viewer may CHANGE, usable directly in UPDATE … WHERE
+ * (no join needed). `fields` = title/owner/date/hours; `status` = board moves.
+ *   admin → any task · manager → tasks in projects they manage · agent → status of own tasks only
+ */
+export function changeableTasks(viewer: Viewer, scope: "status" | "fields"): SQL | undefined {
+  const managed = exists(
+    db
+      .select({ id: projects.id })
+      .from(projects)
+      .where(and(eq(projects.id, tasks.projectId), eq(projects.managerId, viewer.id))),
+  );
+  switch (viewer.role) {
+    case "admin":
+      return undefined;
+    case "manager":
+      return managed;
+    case "agent":
+      // Agents can move their own cards but never edit task details.
+      return scope === "status" ? eq(tasks.assigneeId, viewer.id) : sql`false`;
   }
 }
 
