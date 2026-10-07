@@ -1,0 +1,6 @@
+# Build context for runtime.Dockerfile: only the prebuilt output is needed.
+*
+!.next/standalone
+!.next/static
+!public
+!drizzle
