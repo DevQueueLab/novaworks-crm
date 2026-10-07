@@ -57,6 +57,38 @@ export function relativeDeadline(iso: string) {
   return `${-days} days overdue`;
 }
 
+const dayInLahore = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: TIME_ZONE,
+});
+const dateTimeInLahore = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+  timeZone: TIME_ZONE,
+});
+const relativeTime = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+/** A moment in Lahore time: "7 Oct 2026, 14:05". */
+export const formatDateTime = (date: Date) => dateTimeInLahore.format(date);
+
+/** "just now", "5 minutes ago", "yesterday", "3 days ago"; older than a week shows the date. */
+export function formatRelativeTime(date: Date, now: number = Date.now()) {
+  const minutes = Math.floor((now - date.getTime()) / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return relativeTime.format(-minutes, "minute");
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return relativeTime.format(-hours, "hour");
+  const days = Math.floor(hours / 24);
+  if (days < 7) return relativeTime.format(-days, "day");
+  return dayInLahore.format(date);
+}
+
 /** "Ayesha Khan" → "AK" */
 export function initials(name: string) {
   const parts = name.trim().split(/\s+/);

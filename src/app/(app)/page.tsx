@@ -17,7 +17,7 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { UserAvatar } from "@/components/people";
 import { ProjectCard } from "@/components/projects/project-card";
-import { DeadlineChip } from "@/components/projects/task-list";
+import { DeadlineChip, TaskTitleLink } from "@/components/projects/task-list";
 import { StatCard, StatGrid } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
 import { requireUser, type SessionUser } from "@/lib/auth/dal";
@@ -334,7 +334,9 @@ function ProjectTaskGroup({ group }: { group: ProjectGroup }) {
             className="flex flex-col gap-2.5 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-5"
           >
             <div className="min-w-0">
-              <div className="font-medium leading-snug">{task.title}</div>
+              <div className="font-medium leading-snug">
+                <TaskTitleLink id={task.id} title={task.title} />
+              </div>
               {task.description && (
                 <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground text-pretty">
                   {task.description}

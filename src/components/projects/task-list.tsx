@@ -1,6 +1,8 @@
 import { CalendarDays, Clock } from "lucide-react";
+import Link from "next/link";
 
 import { UserAvatar } from "@/components/people";
+import { StatusBadge } from "@/components/tasks/task-status";
 import {
   Table,
   TableBody,
@@ -10,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { TaskStatus } from "@/db/schema";
 import type { PersonRef } from "@/lib/data/projects";
 import {
   deadlineTone,
@@ -27,8 +30,24 @@ export type TaskRowData = {
   description: string;
   dueDate: string;
   estimatedHours: number;
+  status: TaskStatus;
   assignee: PersonRef;
 };
+
+/** Task title that opens the task page. */
+export function TaskTitleLink({ id, title, className }: { id: string; title: string; className?: string }) {
+  return (
+    <Link
+      href={`/tasks/${id}`}
+      className={cn(
+        "rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring",
+        className,
+      )}
+    >
+      {title}
+    </Link>
+  );
+}
 
 /** Tone-coloured pill with the relative deadline ("in 5 days", "2 days overdue"). */
 export function DeadlineChip({ date, className }: { date: string; className?: string }) {
@@ -85,7 +104,10 @@ export function TaskList({ tasks }: { tasks: TaskRowData[] }) {
             {tasks.map((task) => (
               <TableRow key={task.id} className="transition-colors hover:bg-muted/30">
                 <TableCell className="max-w-md py-4 pl-5 align-top whitespace-normal">
-                  <div className="font-semibold leading-snug">{task.title}</div>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <TaskTitleLink id={task.id} title={task.title} className="font-semibold leading-snug" />
+                    <StatusBadge status={task.status} />
+                  </div>
                   {task.description && (
                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground text-pretty">
                       {task.description}
@@ -125,11 +147,16 @@ export function TaskList({ tasks }: { tasks: TaskRowData[] }) {
         {tasks.map((task) => (
           <li key={task.id} className="rounded-xl border bg-card p-4 shadow-xs">
             <div className="flex items-start justify-between gap-3">
-              <h4 className="font-semibold leading-snug">{task.title}</h4>
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-xs font-semibold text-foreground tabular-nums">
-                <Clock className="size-3" />
-                {formatHours(task.estimatedHours)}
-              </span>
+              <h4 className="font-semibold leading-snug">
+                <TaskTitleLink id={task.id} title={task.title} />
+              </h4>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <StatusBadge status={task.status} />
+                <span className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-xs font-semibold text-foreground tabular-nums">
+                  <Clock className="size-3" />
+                  {formatHours(task.estimatedHours)}
+                </span>
+              </div>
             </div>
             {task.description && (
               <p className="mt-1.5 line-clamp-3 text-sm text-muted-foreground text-pretty">
