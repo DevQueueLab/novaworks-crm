@@ -17,7 +17,7 @@ export function SidebarContent({ user, onNavigate }: { user: ShellUser; onNaviga
         <SidebarNav role={user.role} onNavigate={onNavigate} />
       </div>
       <div className="shrink-0 border-t border-sidebar-border p-3">
-        <UserMenu user={user} />
+        <UserMenu user={user} onNavigate={onNavigate} />
       </div>
     </div>
   );

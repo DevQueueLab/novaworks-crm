@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, ChevronsUpDown, Loader2, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import { Check, ChevronsUpDown, CircleUserRound, Loader2, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useFormStatus } from "react-dom";
 
@@ -46,7 +47,16 @@ function LogoutItem() {
   );
 }
 
-export function UserMenu({ user, compact = false }: { user: ShellUser; compact?: boolean }) {
+export function UserMenu({
+  user,
+  compact = false,
+  onNavigate,
+}: {
+  user: ShellUser;
+  compact?: boolean;
+  /** Called when a menu link is followed (closes the mobile sheet). */
+  onNavigate?: () => void;
+}) {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -58,14 +68,14 @@ export function UserMenu({ user, compact = false }: { user: ShellUser; compact?:
             aria-label="Open account menu"
             className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            <UserAvatar name={user.name} code={user.code} size="md" />
+            <UserAvatar name={user.name} code={user.code} version={user.avatarVersion} size="md" />
           </button>
         ) : (
           <button
             type="button"
             className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors outline-none hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring data-[state=open]:bg-sidebar-accent"
           >
-            <UserAvatar name={user.name} code={user.code} size="lg" />
+            <UserAvatar name={user.name} code={user.code} version={user.avatarVersion} size="lg" />
             <span className="flex min-w-0 flex-1 flex-col gap-1">
               <span className="flex min-w-0 items-center gap-1.5">
                 <span className="truncate text-sm font-medium">{user.name}</span>
@@ -88,12 +98,20 @@ export function UserMenu({ user, compact = false }: { user: ShellUser; compact?:
         )}
       >
         <DropdownMenuLabel className="flex items-center gap-3 py-2 font-normal">
-          <UserAvatar name={user.name} code={user.code} size="md" />
+          <UserAvatar name={user.name} code={user.code} version={user.avatarVersion} size="md" />
           <span className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium">{user.name}</span>
             <span className="truncate text-xs text-muted-foreground">{user.email}</span>
           </span>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild>
+          <Link href="/profile" onClick={onNavigate}>
+            <CircleUserRound />
+            Profile
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
 
         <DropdownMenuLabel className="py-1 text-xs font-normal text-muted-foreground">

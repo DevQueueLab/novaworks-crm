@@ -1,9 +1,11 @@
 import { sql } from "drizzle-orm";
 import {
   check,
+  customType,
   date,
   foreignKey,
   index,
+  integer,
   jsonb,
   numeric,
   pgEnum,
@@ -171,6 +173,26 @@ export const tasks = pgTable(
     check("tasks_estimated_hours_positive", sql`${t.estimatedHours} > 0`),
     uniqueIndex("tasks_project_title_key").on(t.projectId, sql`lower(${t.title})`),
     index("tasks_assignee_id_idx").on(t.assigneeId),
+  ],
+);
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+/** Profile photos, kept out of `users` so user lookups stay small. Resized client-side to 256px. */
+export const userAvatars = pgTable(
+  "user_avatars",
+  {
+    userId: uuid("user_id")
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    image: bytea("image").notNull(),
+    mimeType: text("mime_type").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    check("user_avatars_mime_type", sql`${t.mimeType} in ('image/webp', 'image/jpeg', 'image/png')`),
+    check("user_avatars_byte_size", sql`${t.byteSize} between 1 and 524288`),
   ],
 );
 

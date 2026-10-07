@@ -8,4 +8,6 @@ export type ShellUser = {
   email: string;
   role: UserRole;
   title: string;
+  /** Profile photo timestamp for cache busting; null when the user has no photo. */
+  avatarVersion: number | null;
 };

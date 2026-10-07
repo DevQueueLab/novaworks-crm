@@ -15,6 +15,13 @@
       "when": 1791356942817,
       "tag": "0001_collaboration",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791357829945,
+      "tag": "0002_user_avatars",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { cookies } from "next/headers";
 
 import { db } from "@/db";
-import { sessions, users, type UserRole } from "@/db/schema";
+import { sessions, userAvatars, users, type UserRole } from "@/db/schema";
 
 import { SESSION_COOKIE } from "./constants";
 
@@ -19,6 +19,8 @@ export type SessionUser = {
   email: string;
   role: UserRole;
   title: string;
+  /** When the profile photo last changed (ms since epoch), or null without one. Busts the avatar cache. */
+  avatarVersion: number | null;
 };
 
 // The cookie carries a random token; the database stores only its SHA-256, so a
@@ -57,9 +59,11 @@ export async function getSessionUser(): Promise<SessionUser | null> {
         role: users.role,
         title: users.title,
       },
+      avatarUpdatedAt: userAvatars.updatedAt,
     })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
+    .leftJoin(userAvatars, eq(userAvatars.userId, users.id))
     .where(and(eq(sessions.id, sessionId), isNull(users.deactivatedAt)))
     .limit(1);
 
@@ -68,7 +72,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     await db.delete(sessions).where(eq(sessions.id, sessionId));
     return null;
   }
-  return row.user;
+  return { ...row.user, avatarVersion: row.avatarUpdatedAt?.getTime() ?? null };
 }
 
 export async function deleteSession() {

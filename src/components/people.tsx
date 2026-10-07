@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { UserRole } from "@/db/schema";
 import { initials } from "@/lib/format";
@@ -16,7 +16,7 @@ const palette = [
 ];
 
 /** Stable colour per person, derived from their directory code. */
-function colorFor(seed: string) {
+export function avatarColor(seed: string) {
   let hash = 0;
   for (const char of seed) hash = (hash * 31 + char.charCodeAt(0)) | 0;
   return palette[Math.abs(hash) % palette.length];
@@ -24,20 +24,36 @@ function colorFor(seed: string) {
 
 const sizes = { sm: "size-6 text-[10px]", md: "size-8 text-xs", lg: "size-10 text-sm" } as const;
 
+/** URL of a person's profile photo. A `version` (photo timestamp) busts the browser cache after a change. */
+export function avatarSrc(code: string, version?: number | null) {
+  return `/api/avatars/${encodeURIComponent(code)}${version ? `?v=${version}` : ""}`;
+}
+
+/**
+ * Photo when the person has one, initials otherwise (the image route answers
+ * 404 and Radix keeps the fallback). `version`: a number busts the cache,
+ * `null` means "known to have no photo" and skips the request, and leaving it
+ * out simply tries the photo.
+ */
 export function UserAvatar({
   name,
   code,
+  version,
   size = "md",
   className,
 }: {
   name: string;
   code?: string;
+  version?: number | null;
   size?: keyof typeof sizes;
   className?: string;
 }) {
   return (
     <Avatar className={cn(sizes[size], className)}>
-      <AvatarFallback className={cn("font-semibold", colorFor(code ?? name))}>
+      {code && version !== null && (
+        <AvatarImage src={avatarSrc(code, version)} alt="" className="object-cover" />
+      )}
+      <AvatarFallback className={cn("font-semibold", avatarColor(code ?? name))}>
         {initials(name)}
       </AvatarFallback>
     </Avatar>
