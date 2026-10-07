@@ -8,10 +8,10 @@ Paste a client-planning meeting transcript, and NovaWorks CRM uses AI to turn it
 - Team name: **DevQueue**
 - Members:
 
-  | Member | Roll no. | GitHub |
-  | --- | --- | --- |
-  | Muhammad Muneeb Shahzad | FA24-BSE-085 | [@VicegerentPrince](https://github.com/VicegerentPrince) |
-  | Abdullah Hassan | FA24-BSE-007 | [@abdullahhrajpoot](https://github.com/abdullahhrajpoot) |
+  | Member | Roll no. | GitHub | Responsibilities |
+  | --- | --- | --- | --- |
+  | Muhammad Muneeb Shahzad | FA24-BSE-085 | [@VicegerentPrince](https://github.com/VicegerentPrince) | Architecture and backend: PostgreSQL schema and migrations, sessions and role-based access, AI transcript pipeline, VPS deployment (Docker, HTTPS) |
+  | Abdullah Hassan | FA24-BSE-007 | [@abdullahhrajpoot](https://github.com/abdullahhrajpoot) | Product and QA: testing the role-based views and transcript imports, demo walkthrough and presentation, documentation review |
 
 - Repository: https://github.com/DevQueueLab/novaworks-crm
 
@@ -26,6 +26,10 @@ Everything in the brief works end to end. Nothing in the core flow is mocked.
 | **Admin: re-import / sync** | Importing the same meeting again is idempotent. A modified transcript updates only the fields that changed, and the result screen shows field-level diffs (e.g. `10 h → 12 h`, `22 Oct → 23 Oct`). |
 | **Manager view** | Project cards for the projects they manage, plus a project detail page with every task's owner, deadline, description and estimated hours. |
 | **Agent view** | Only their own tasks, across every project they work on. |
+| **Kanban board** | `/board` and a List/Board switch on every project: To do, In progress, In review and Done columns with drag-and-drop, filters and a *Move to* menu. Moves are permission-checked on the server (admin any task, managers their projects, agents their own). |
+| **Task pages and discussion** | Every task opens on its own page with a status control, an edit drawer for the admin and the project's manager, and a discussion thread that mixes comments with an activity log of moves and edits. |
+| **Team channels** | Slack-style `/messages`: `#general`, an automatic channel per project (visible only to that project's people) and channels anyone can create, with live updates. |
+| **Admin: users and settings** | Create and edit users, change roles safely, reset passwords and deactivate accounts (signs them out everywhere). Settings for the company name, the AI model with a connection test, system health and a danger zone. |
 | **Saved records** | Everything is stored in PostgreSQL and survives refreshes and restarts. Every import is kept as a `meetings` record for provenance. |
 | **JSON API** | `GET /api/projects`, `GET /api/projects/:id` and `GET /api/tasks` follow the same per-role rules as the pages. Out-of-scope ids return **404**. |
 | **Reset** | The admin *Reset demo data* button (or `pnpm db:reset-demo`) deletes generated data and keeps the seeded users. |
@@ -82,7 +86,7 @@ Tables: `users`, `sessions`, `clients`, `meetings`, `projects`, `tasks` (see `sr
 
 ## Links
 - Live application: **https://novaworks.devqueue.co**
-- Demo video: [link]
+- Demo video: not recorded; the live application above is the demo
 
 ## Requirements
 - **Node.js 24 LTS** (`engines.node >= 24`)
@@ -228,7 +232,7 @@ These emails are fictional identifiers, not mailboxes. Signup, email verificatio
 - Database: **self-hosted PostgreSQL 18.6** (`postgres:18.6-alpine`) in container `novaworks-db` on the same VPS.
   - It is reachable only on the private Docker network, with no published port. Data lives on a named volume.
   - SSL isn't needed, because database traffic never leaves the host.
-- Deployed branch/commit: `main` @ [commit SHA]
+- Deployed branch/commit: `main` (latest commit)
 
 ### How We Deployed
 1. **Build.** Build the image from the repo's multi-stage `Dockerfile`:
@@ -266,7 +270,7 @@ These emails are fictional identifiers, not mailboxes. Signup, email verificatio
 
 ## Submission Summary
 - Source repository: https://github.com/DevQueueLab/novaworks-crm
-- Live link or local demo video: https://novaworks.devqueue.co (demo video: [link])
+- Live link or local demo video: https://novaworks.devqueue.co
 - Setup and seed commands: documented above. In short: `pnpm install` → `cp .env.example .env.local` → `docker compose up -d` → `pnpm dev`. Migrations and seed run automatically, or use `pnpm db:migrate && pnpm db:seed`. Reset with `pnpm db:reset-demo`.
 - Demo login accounts: all ten seeded automatically (password `Demo123!`), confirmed working.
 - Features completed:
