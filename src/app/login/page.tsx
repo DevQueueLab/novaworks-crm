@@ -1,63 +1,23 @@
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LogoMark } from "@/components/app-shell/logo";
+import { TranscriptToTask } from "@/components/auth/transcript-to-task";
 import { getCurrentUser } from "@/lib/auth/dal";
+import { cn } from "@/lib/utils";
 
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-/** Real output from the bundled sample transcript (UrbanCart Website). */
-const previewTasks = [
-  { title: "Product catalog UI", owner: "Ali Raza", due: "12 Oct", hours: "12h" },
-  { title: "Product and cart APIs", owner: "Hamza Shah", due: "14 Oct", hours: "14h" },
-  { title: "Demo cart UI", owner: "Ali Raza", due: "15 Oct", hours: "8h" },
-];
-
-function BrandPanel() {
+function Wordmark({ className }: { className?: string }) {
   return (
-    <aside className="hidden flex-col justify-between gap-12 border-r border-white/5 bg-[oklch(0.19_0.03_280)] p-10 text-white lg:flex xl:p-14">
-      <div className="flex items-center gap-3">
-        <LogoMark className="size-9" />
-        <span className="text-lg font-semibold tracking-tight">NovaWorks</span>
-      </div>
-
-      <div className="max-w-lg space-y-10">
-        <div className="space-y-4">
-          <h2 className="text-4xl leading-[1.1] font-semibold tracking-tight text-balance xl:text-5xl">
-            From meeting to execution.
-          </h2>
-          <p className="max-w-[46ch] text-base leading-7 text-pretty text-white/70">
-            Paste a meeting transcript and NovaWorks drafts the projects, tasks, owners and deadlines, matched to
-            your real team and ready to review.
-          </p>
-        </div>
-
-        <figure className="overflow-hidden rounded-xl bg-white/[0.04] ring-1 ring-white/10">
-          <figcaption className="flex items-baseline justify-between gap-4 border-b border-white/10 px-4 py-3">
-            <span className="text-sm font-medium">UrbanCart Website</span>
-            <span className="text-xs text-white/55 tabular-nums">3 tasks, 34h</span>
-          </figcaption>
-          <ul className="divide-y divide-white/[0.06]">
-            {previewTasks.map((task) => (
-              <li key={task.title} className="flex items-center gap-4 px-4 py-2.5 text-sm">
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-white/90">{task.title}</span>
-                  <span className="block truncate text-xs text-white/50">{task.owner}</span>
-                </span>
-                <span className="w-12 shrink-0 text-right text-xs text-white/60 tabular-nums">{task.due}</span>
-                <span className="w-8 shrink-0 text-right text-xs font-medium text-white/85 tabular-nums">
-                  {task.hours}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </figure>
-      </div>
-
-      <p className="text-sm text-white/55">Built by DevQueue for Infinity Hack ’26</p>
-    </aside>
+    <span className={cn("flex items-center gap-2.5", className)}>
+      <LogoMark />
+      <span className="text-[0.9375rem] font-semibold tracking-tight">NovaWorks</span>
+    </span>
   );
 }
 
@@ -66,27 +26,49 @@ export default async function LoginPage() {
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <BrandPanel />
+      {/* The form comes first in the DOM so keyboard and screen reader users reach the task first. */}
+      <main className="flex min-w-0 flex-col">
+        <div className="flex h-16 shrink-0 items-center justify-between gap-4 px-5 sm:px-8 lg:justify-end lg:px-10">
+          <Wordmark className="lg:hidden" />
+          <Link
+            href="/"
+            className="group -mr-2.5 inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <ArrowLeft
+              aria-hidden
+              className="size-4 transition-transform duration-200 ease-out-expo group-hover:-translate-x-0.5"
+            />
+            Back to home
+          </Link>
+        </div>
 
-      <main className="flex flex-col items-center justify-center px-4 py-10 sm:px-8">
-        <div className="w-full max-w-md">
-          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <LogoMark />
-            <span className="font-semibold tracking-tight">NovaWorks</span>
+        <div className="flex flex-1 items-center justify-center px-5 pt-6 pb-16 sm:px-8">
+          <div className="w-full max-w-sm">
+            <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Use the account your admin set up for you.</p>
+            <LoginForm className="mt-8" />
           </div>
-
-          <div className="rounded-xl border bg-card p-6 shadow-sm sm:p-8">
-            <div className="mb-6 space-y-1.5">
-              <h1 className="text-2xl leading-8 font-semibold tracking-tight">Sign in</h1>
-              <p className="text-sm text-muted-foreground">
-                Use your NovaWorks account.
-              </p>
-            </div>
-            <LoginForm />
-          </div>
-
         </div>
       </main>
+
+      <aside
+        aria-labelledby="login-panel-heading"
+        className="hidden min-w-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:order-first lg:flex"
+      >
+        <div className="flex h-16 shrink-0 items-center px-10 xl:px-14">
+          <Wordmark />
+        </div>
+
+        <div className="flex flex-1 flex-col justify-center px-10 pt-6 pb-16 xl:px-14">
+          <h2
+            id="login-panel-heading"
+            className="max-w-xl text-3xl leading-[1.15] font-semibold tracking-tight xl:text-4xl xl:leading-[1.12]"
+          >
+            Meeting transcripts become assigned, dated, estimated work.
+          </h2>
+          <TranscriptToTask className="mt-10 w-full max-w-[30rem]" />
+        </div>
+      </aside>
     </div>
   );
 }

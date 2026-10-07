@@ -1,0 +1,82 @@
+/*
+ * The sign-in panel's one authored moment. The words NovaWorks reads the owner,
+ * estimate and deadline from are marked in reading order, then the task row they
+ * produced settles in underneath. With reduced motion requested nothing moves and
+ * everything is shown at rest.
+ */
+
+.mark {
+  --mark-fill: color-mix(in oklch, var(--primary) 16%, transparent);
+
+  margin-inline: -0.15em;
+  padding-inline: 0.15em;
+  border-radius: 0.25rem;
+  color: inherit;
+  background-color: transparent;
+  background-image: linear-gradient(var(--mark-fill), var(--mark-fill));
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+:global(.dark) .mark {
+  --mark-fill: color-mix(in oklch, var(--primary) 30%, transparent);
+}
+
+@media (forced-colors: active) {
+  .mark {
+    background-image: none;
+    background-color: Mark;
+    color: MarkText;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mark {
+    animation-name: sweep;
+    animation-duration: 600ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    animation-fill-mode: both;
+  }
+
+  .owner {
+    animation-delay: 200ms;
+  }
+
+  .estimate {
+    animation-delay: 450ms;
+  }
+
+  .deadline {
+    animation-delay: 700ms;
+  }
+
+  .result {
+    animation-name: settle;
+    animation-duration: 600ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    animation-delay: 950ms;
+    animation-fill-mode: both;
+  }
+}
+
+@keyframes sweep {
+  from {
+    background-size: 0% 100%;
+  }
+  to {
+    background-size: 100% 100%;
+  }
+}
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
