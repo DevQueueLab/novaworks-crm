@@ -43,3 +43,6 @@ next-env.d.ts
 
 # local tooling (design skills installed per-developer)
 .claude/
+
+# team-only credentials (never commit)
+/NovaWorks CRM - Demo Accounts*
