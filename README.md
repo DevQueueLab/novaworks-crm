@@ -2,7 +2,7 @@
 
 Paste a client-planning meeting transcript, and NovaWorks CRM uses AI to turn it into validated projects and tasks. Each one gets a manager, a client, a deadline, an owner and estimated hours. Admins, managers and agents each see only what their role allows.
 
-**Live:** https://novaworks.devqueue.co · **Demo password for all accounts:** `Demo123!`
+**Live demo:** ran at novaworks.devqueue.co during Infinity Hack '26 (7 Oct 2026) and has since been retired. Run it locally with the steps below. **Demo password for all accounts:** `Demo123!`
 
 ## Team
 - Team name: **DevQueue**
@@ -85,7 +85,7 @@ Tables: `users`, `sessions`, `clients`, `meetings`, `projects`, `tasks` (see `sr
 - **`meetings` table:** every transcript import is kept for provenance. Projects link to their source meeting, and the summary JSON records what changed.
 
 ## Links
-- Live application: **https://novaworks.devqueue.co**
+- Live application: retired after the hackathon (it ran at novaworks.devqueue.co on 7–8 Oct 2026)
 - Demo video: not recorded; the live application above is the demo
 
 ## Requirements
@@ -226,7 +226,7 @@ These emails are fictional identifiers, not mailboxes. Signup, email verificatio
   ```
 
 ## Deployment Details
-- Deployment status: **Live** at https://novaworks.devqueue.co
+- Deployment status: **Retired** after the hackathon. It ran on our VPS at novaworks.devqueue.co on 7–8 Oct 2026; the setup below describes how it was deployed.
 - Frontend host: a self-managed VPS (AlmaLinux 9, shared with other apps). The Next.js container `novaworks-web` sits behind OpenLiteSpeed (CyberPanel), which handles HTTPS with Let's Encrypt.
 - Backend host: the **same Next.js app and container** as the frontend (Server Components, Server Actions and `/api` route handlers) at the same URL. There is no separate backend service.
 - Database: **self-hosted PostgreSQL 18.6** (`postgres:18.6-alpine`) in container `novaworks-db` on the same VPS.
@@ -256,7 +256,7 @@ These emails are fictional identifiers, not mailboxes. Signup, email verificatio
    - `APP_URL=https://novaworks.devqueue.co`
 5. **Migrations and seed** run **automatically on container start** (`src/instrumentation.ts` applies the bundled Drizzle migrations, then runs the idempotent seeder). No manual command is needed, and redeploys are safe.
 6. **Frontend API URL / CORS:** not used. The browser only talks to `https://novaworks.devqueue.co`, which serves pages, Server Actions and the JSON API from one origin.
-7. **For judges:** open https://novaworks.devqueue.co and log in with any demo account (`Demo123!`). As admin, go to *Create from Transcript*, click *Load sample transcript*, then create. The AI key is already configured on the server, so no setup is needed.
+7. **For judges:** during the event, judges opened the deployment and logged in with any demo account (`Demo123!`). The deployment has since been retired; run the app locally with the steps above.
 
 ## Known Limitations
 - **OpenRouter free-tier quota.** Free models allow about **50 requests/day per account** and may hit rate limits at peak times.
@@ -270,7 +270,7 @@ These emails are fictional identifiers, not mailboxes. Signup, email verificatio
 
 ## Submission Summary
 - Source repository: https://github.com/DevQueueLab/novaworks-crm
-- Live link or local demo video: https://novaworks.devqueue.co
+- Live link or local demo video: live deployment retired after judging (see Deployment Details)
 - Setup and seed commands: documented above. In short: `pnpm install` → `cp .env.example .env.local` → `docker compose up -d` → `pnpm dev`. Migrations and seed run automatically, or use `pnpm db:migrate && pnpm db:seed`. Reset with `pnpm db:reset-demo`.
 - Demo login accounts: all ten seeded automatically (password `Demo123!`), confirmed working.
 - Features completed:
