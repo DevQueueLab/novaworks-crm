@@ -1,8 +1,40 @@
 # NovaWorks CRM — AI Meeting to Project CRM
 
+<p align="center">
+  <img src="docs/cover.jpg" alt="NovaWorks CRM: meeting transcripts in, assigned work out" width="100%">
+</p>
+
 Paste a client-planning meeting transcript, and NovaWorks CRM uses AI to turn it into validated projects and tasks. Each one gets a manager, a client, a deadline, an owner and estimated hours. Admins, managers and agents each see only what their role allows.
 
 **Live demo:** ran at novaworks.devqueue.co during Infinity Hack '26 (7 Oct 2026) and has since been retired. Run it locally with the steps below. **Demo password for all accounts:** `Demo123!`
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/01-landing.jpg" alt="Landing page"><br><sub><b>Landing page</b>: the public product page, animated with GSAP</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/03-create-from-transcript.jpg" alt="Create from transcript"><br><sub><b>Create from transcript</b>: paste a meeting and the AI drafts the plan</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/02-dashboard.jpg" alt="Overview"><br><sub><b>Overview</b>: projects, tasks and estimated hours at a glance</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/04-project.jpg" alt="Project"><br><sub><b>Project</b>: client, manager, deadline, workload and every task</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/05-board.jpg" alt="Board"><br><sub><b>Board</b>: drag-and-drop status columns with filters</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/06-task.jpg" alt="Task"><br><sub><b>Task</b>: status, details and a discussion thread</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/07-agent-dashboard.jpg" alt="Agent view"><br><sub><b>Agent view</b>: each developer sees only their own work</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/08-settings.jpg" alt="Admin settings"><br><sub><b>Admin settings</b>: AI model, connection test and system health</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/09-sign-in.jpg" alt="Sign in"><br><sub><b>Sign in</b>: light theme</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/10-sign-in-dark.jpg" alt="Sign in, dark"><br><sub><b>Sign in, dark</b>: every screen supports dark mode</sub></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="docs/screenshots/11-mobile.jpg" alt="Mobile" width="70%"><br><sub><b>Mobile</b>: sign in and the overview at 390px wide</sub></td>
+  </tr>
+</table>
 
 ## Team
 - Team name: **DevQueue**
